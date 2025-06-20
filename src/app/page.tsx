@@ -5,12 +5,7 @@ import { Search, MapPin, Star, DollarSign, Utensils, Loader2, ChefHat, AlertCirc
 import axios from 'axios';
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 
-interface Suggestion {
-  name: string;
-  cuisine: string;
-  similarity_reason: string;
-  characteristics: string;
-}
+
 
 interface Restaurant {
   name: string;
@@ -44,11 +39,7 @@ interface Restaurant {
     specialties?: string[];
     confidence: number;
   };
-  suggestion?: {
-    dishName: string;
-    cuisine: string;
-    similarityReason: string;
-  };
+
 }
 
 interface UserLocation {
@@ -71,7 +62,6 @@ export default function Home() {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [error, setError] = useState('');
   
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
@@ -194,34 +184,21 @@ export default function Home() {
     setError('');
     setSelectedRestaurant(null);
     setRestaurants([]);
-    setSuggestions([]);
 
     try {
-      console.log('📡 Making API call to /api/similarity');
-      const similarityResponse = await axios.post('/api/similarity', {
+      console.log('📡 Making API call to /api/nearby');
+      const nearbyResponse = await axios.post('/api/nearby', {
         dish: dish.trim(),
         restaurant: selectedPlace,
-        userLocation,
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        radius: 8000,
       });
-      console.log('✅ Similarity response:', similarityResponse.data);
-      
-      const { suggestions } = similarityResponse.data;
-      setSuggestions(suggestions);
-
-      if (suggestions.length > 0) {
-        console.log('📡 Making API call to /api/nearby');
-        const nearbyResponse = await axios.post('/api/nearby', {
-          originalDish: dish.trim(),
-          suggestions,
-          userLocation,
-          radius: 8000,
-        });
-        console.log('✅ Nearby response:', nearbyResponse.data);
-        setRestaurants(nearbyResponse.data.restaurants);
-      }
+      console.log('✅ Nearby response:', nearbyResponse.data);
+      setRestaurants(nearbyResponse.data.restaurants);
     } catch (error) {
       console.error('❌ API Error:', error);
-      setError('Failed to analyze dish similarity. Please try again.');
+      setError('Failed to find nearby restaurants. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -445,23 +422,8 @@ export default function Home() {
                     </button>
                 </form>
             </div>
-            {(suggestions.length > 0 || restaurants.length > 0 || isLoading) && (
+            {(restaurants.length > 0 || isLoading) && (
             <div className="space-y-8">
-              {suggestions.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Dishes You Might Like</h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {suggestions.map((suggestion, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <h3 className="font-semibold text-lg text-gray-900 mb-2">{suggestion.name}</h3>
-                        <p className="text-orange-600 font-medium mb-2">{suggestion.cuisine}</p>
-                        <p className="text-gray-600 text-sm mb-3">{suggestion.similarity_reason}</p>
-                        <p className="text-gray-500 text-xs">{suggestion.characteristics}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
               {restaurants.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Nearby Restaurants</h2>
@@ -534,16 +496,7 @@ export default function Home() {
                             </p>
                           </div>
 
-                          {/* Suggested Similar Dish (if available) */}
-                          {restaurant.suggestion && (
-                            <div className="bg-orange-100 rounded-lg p-4">
-                              <p className="text-sm text-gray-700">
-                                <span className="font-medium">Suggested Dish: {restaurant.suggestion.dishName}</span> - 
-                                {restaurant.suggestion.similarityReason}
-                              </p>
-                              <p className="text-xs text-orange-600 mt-1">{restaurant.suggestion.cuisine} cuisine</p>
-                            </div>
-                          )}
+
 
                           {/* Menu Insights from Reviews */}
                           {restaurant.menuInsights && restaurant.menuInsights.dishes.length > 0 && (

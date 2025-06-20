@@ -26,39 +26,33 @@ interface GooglePlace {
   }>;
 }
 
-interface Suggestion {
-  name: string;
-  cuisine: string;
-  similarity_reason: string;
-  characteristics: string;
-}
+
 
 export async function POST(request: NextRequest) {
   try {
-    const { originalDish, suggestions, userLocation, radius = 5000 } = await request.json();
+    const { dish, restaurant, latitude, longitude, radius = 5000 } = await request.json();
 
-    if (!originalDish || !userLocation) {
-      return NextResponse.json(
-        { error: 'Original dish and user location are required' },
-        { status: 400 }
-      );
+    if (!dish) {
+      return NextResponse.json({ error: 'Dish name is required' }, { status: 400 });
     }
 
-    const { latitude, longitude } = userLocation;
+    if (!latitude || !longitude) {
+      return NextResponse.json({ error: 'Location is required' }, { status: 400 });
+    }
 
     const placesApiKey = process.env.GOOGLE_PLACES_API_KEY;
-    
     if (!placesApiKey) {
-      return NextResponse.json(
-        { error: 'Google Places API key not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Google Places API key not configured' }, { status: 500 });
     }
 
-    // Simplified approach: Search for restaurants by cuisine type and analyze in batches
+    const originalDish = dish;
+    const userLocation = restaurant || `${latitude}, ${longitude}`;
+
+    // Search directly for the dish with broader categories to get variety
     const searchQueries = [
       `"${originalDish}" restaurant`,
-      ...(suggestions?.slice(0, 3).map((s: Suggestion) => `${s.cuisine} restaurant`) || [])
+      `${originalDish} food`,
+      'restaurant'  // General search to ensure variety
     ];
 
     // Process searches in parallel but limit results
@@ -120,15 +114,6 @@ export async function POST(request: NextRequest) {
     const restaurantResults = validRestaurants.map((restaurant, index) => {
       const dishAvailability = dishAvailabilityResults[index];
 
-      // Find matching suggestion if any
-      const matchingSuggestion = suggestions?.find((s: Suggestion) => 
-        restaurant.types.some((type: string) => 
-          type.includes('restaurant') || 
-          s.cuisine.toLowerCase().includes(type) ||
-          restaurant.name.toLowerCase().includes(s.cuisine.toLowerCase())
-        )
-      );
-
       return {
         name: restaurant.name,
         address: restaurant.address,
@@ -143,11 +128,6 @@ export async function POST(request: NextRequest) {
         dishAvailability,
         menuInsights: restaurant.menuInsights,
         tasteProfile: restaurant.tasteProfile,
-        suggestion: matchingSuggestion ? {
-          dishName: matchingSuggestion.name,
-          cuisine: matchingSuggestion.cuisine,
-          similarityReason: matchingSuggestion.similarity_reason,
-        } : null,
       };
     });
 
