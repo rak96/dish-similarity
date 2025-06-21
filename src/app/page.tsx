@@ -307,8 +307,8 @@ export default function Home() {
                                     console.log('🍽️ Dish input change:', e.target.value);
                                     setDish(e.target.value);
                                 }}
-                                placeholder="e.g., Fried Chicken, Big Mac, Carne Asada Tacos"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                                  placeholder="e.g., Fried Chicken, Big Mac, Carne Asada Tacos"
+                                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                                 disabled={isLoading}
                             />
                         </div>
@@ -325,8 +325,8 @@ export default function Home() {
                                         type="text"
                                         value={fallbackInput}
                                         onChange={handleFallbackInputChange}
-                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner Name, etc.)"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                                                  placeholder="Where did you have this dish? (e.g., KFC, Local Diner Name, etc.)"
+                                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                                         disabled={isLoading}
                                     />
                                     <div className="text-xs text-gray-500 mt-1">
@@ -350,8 +350,8 @@ export default function Home() {
                                         ref={inputRef}
                                         type="text"
                                         id="location"
-                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner, etc.)"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                                    placeholder="Where did you have this dish? (e.g., KFC, Local Diner, etc.)"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                                         disabled={isLoading}
                                         onChange={(e) => {
                                             console.log('🏪 Restaurant input change:', e.target.value);
@@ -495,7 +495,7 @@ export default function Home() {
                                   </div>
                                 )}
                               </div>
-                              <div className="text-xs font-medium px-2 py-1 rounded-full bg-white">
+                              <div className="text-xs font-medium px-2 py-1 rounded-full bg-white text-gray-800 border border-gray-200">
                                 {restaurant.dishAvailability.confidence}% confidence
                               </div>
                             </div>
@@ -572,7 +572,7 @@ export default function Home() {
                       value={dishToAnalyze}
                       onChange={(e) => setDishToAnalyze(e.target.value)}
                       placeholder="e.g., Pad Thai, The 'Special' Burger"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                       disabled={isAnalyzingDish}
                     />
                     <button
