@@ -241,31 +241,57 @@ export default function Home() {
   const shouldUseFallback = useFallback || !apiKey || loadError || !isLoaded;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-            <div className="flex justify-center items-center mb-4">
-                <Utensils className="w-8 h-8 text-orange-600 mr-2" />
-                <h1 className="text-4xl font-bold text-gray-900">Dish Discovery</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl animate-bounce"></div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="text-center mb-16">
+            <div className="flex justify-center items-center mb-6">
+                <div className="relative">
+                  <Utensils className="w-12 h-12 text-cyan-400 mr-3 drop-shadow-lg animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 rounded-full animate-ping"></div>
+                </div>
+                <h1 className="text-6xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  DishHunt
+                </h1>
+                <div className="ml-3 px-3 py-1 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full text-white text-xs font-bold animate-bounce">
+                  AI
+                </div>
             </div>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Find similar dishes at other restaurants! Tell us about a dish you loved at a specific restaurant, 
-                and we&apos;ll help you discover similar versions near you using AI-powered flavor analysis.
+            <p className="text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
+                🔥 <span className="text-cyan-400 font-semibold">Restaurant-to-restaurant</span> dish hunting powered by AI! 
+                <br />
+                Find where to get your favorite dish <span className="text-pink-400 font-semibold">exactly like</span> that place you love ✨
             </p>
+            <div className="mt-6 flex justify-center space-x-4">
+              <div className="px-4 py-2 bg-gradient-to-r from-green-400/20 to-emerald-400/20 rounded-full border border-green-400/30 backdrop-blur-sm">
+                <span className="text-green-300 text-sm font-medium">🤖 AI-Powered</span>
+              </div>
+              <div className="px-4 py-2 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 rounded-full border border-blue-400/30 backdrop-blur-sm">
+                <span className="text-blue-300 text-sm font-medium">⚡ Super Fast</span>
+              </div>
+              <div className="px-4 py-2 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full border border-purple-400/30 backdrop-blur-sm">
+                <span className="text-purple-300 text-sm font-medium">🎯 Hyper Accurate</span>
+              </div>
+            </div>
         </div>
 
         <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 mb-8 hover:bg-white/15 transition-all duration-300">
                 {/* Debug Panel */}
-                <div className="mb-4 p-3 bg-gray-100 rounded-lg text-xs">
+                <div className="mb-4 p-3 bg-black/20 backdrop-blur-sm rounded-xl text-xs border border-white/10">
                     <button 
                         onClick={() => setDebugMode(!debugMode)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
                     >
-                        {debugMode ? 'Hide' : 'Show'} Debug Info
+                        {debugMode ? '🙈 Hide' : '🔍 Show'} Debug Info
                     </button>
-                    {debugMode && (
-                        <div className="mt-2 space-y-1">
+                                            {debugMode && (
+                        <div className="mt-2 space-y-1 text-gray-300">
                             <div>🗝️ API Key: {apiKey ? `Present (${apiKey.length} chars)` : 'Missing'}</div>
                             <div>📍 Maps Loaded: {isLoaded ? 'Yes' : 'No'}</div>
                             <div>❌ Load Error: {loadError ? `Yes - ${loadError.message}` : 'No'}</div>
@@ -293,11 +319,11 @@ export default function Home() {
                     </div>
                 )}
 
-                <form onSubmit={handleSearchSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label htmlFor="dish" className="block text-sm font-medium text-gray-700">
-                                What dish did you have?
+                <form onSubmit={handleSearchSubmit} className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                            <label htmlFor="dish" className="block text-sm font-bold text-cyan-300 uppercase tracking-wider">
+                                🍽️ What dish did you devour?
                             </label>
                             <input
                                 type="text"
@@ -307,15 +333,15 @@ export default function Home() {
                                     console.log('🍽️ Dish input change:', e.target.value);
                                     setDish(e.target.value);
                                 }}
-                                                                  placeholder="e.g., Fried Chicken, Big Mac, Carne Asada Tacos"
-                                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                placeholder="e.g., Fried Chicken, Big Mac, Carne Asada Tacos"
+                                className="w-full px-6 py-4 bg-white/10 backdrop-blur-sm border-2 border-cyan-400/30 rounded-2xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 text-white placeholder-gray-400 font-medium transition-all duration-300 hover:bg-white/15"
                                 disabled={isLoading}
                             />
                         </div>
                         
-                        <div className="space-y-2">
-                            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                                Where did you have it?
+                        <div className="space-y-3">
+                            <label htmlFor="location" className="block text-sm font-bold text-pink-300 uppercase tracking-wider">
+                                🏪 Where did you have it?
                             </label>
                             
                             {shouldUseFallback ? (
@@ -325,12 +351,13 @@ export default function Home() {
                                         type="text"
                                         value={fallbackInput}
                                         onChange={handleFallbackInputChange}
-                                                                                  placeholder="Where did you have this dish? (e.g., KFC, Local Diner Name, etc.)"
-                                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner Name, etc.)"
+                                        className="w-full px-6 py-4 bg-white/10 backdrop-blur-sm border-2 border-pink-400/30 rounded-2xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 text-white placeholder-gray-400 font-medium transition-all duration-300 hover:bg-white/15"
                                         disabled={isLoading}
                                     />
-                                    <div className="text-xs text-gray-500 mt-1">
-                                        Manual input mode. For better results, configure Google Maps API key.
+                                    <div className="text-xs text-gray-400 mt-1 flex items-center">
+                                        <span className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></span>
+                                        Manual input mode. Configure Google Maps API for autocomplete.
                                     </div>
                                 </div>
                             ) : (
@@ -350,8 +377,8 @@ export default function Home() {
                                         ref={inputRef}
                                         type="text"
                                         id="location"
-                                                                    placeholder="Where did you have this dish? (e.g., KFC, Local Diner, etc.)"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner, etc.)"
+                                        className="w-full px-6 py-4 bg-white/10 backdrop-blur-sm border-2 border-pink-400/30 rounded-2xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 text-white placeholder-gray-400 font-medium transition-all duration-300 hover:bg-white/15"
                                         disabled={isLoading}
                                         onChange={(e) => {
                                             console.log('🏪 Restaurant input change:', e.target.value);
@@ -379,13 +406,13 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-6 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-sm rounded-2xl border border-white/20">
                         <div className="flex items-center">
-                            <MapPin className="w-5 h-5 text-gray-500 mr-2" />
-                            <span className="text-sm text-gray-600">
+                            <MapPin className="w-6 h-6 text-cyan-400 mr-3 animate-pulse" />
+                            <span className="text-sm text-gray-300 font-medium">
                                 {userLocation 
-                                ? 'Location detected - ready to find nearby restaurants!' 
-                                : 'Location access needed to find nearby restaurants'
+                                ? '🎯 Location locked! Ready to hunt for dishes...' 
+                                : '📍 Grant location access to find nearby restaurants'
                                 }
                             </span>
                         </div>
@@ -394,12 +421,12 @@ export default function Home() {
                             type="button"
                             onClick={getUserLocation}
                             disabled={isGettingLocation}
-                            className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                            className="px-6 py-3 text-sm bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 font-bold transition-all duration-300 transform hover:scale-105"
                         >
                             {isGettingLocation ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <><Loader2 className="w-4 h-4 animate-spin mr-2" />Locating...</>
                             ) : (
-                            'Enable Location'
+                            '🚀 Enable Location'
                             )}
                         </button>
                         )}
@@ -412,57 +439,60 @@ export default function Home() {
                     <button
                         type="submit"
                         disabled={isLoading || !userLocation}
-                        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-orange-700 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+                        className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white py-6 px-8 rounded-2xl font-black text-lg hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-2xl border border-white/20 relative overflow-hidden"
                     >
-                        {isLoading ? (
-                            <><Loader2 className="w-5 h-5 animate-spin mr-2" />Analyzing flavors...</>
-                        ) : (
-                            <><Search className="w-5 h-5 mr-2" />Find Similar Dishes</>
-                        )}
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-400/20 via-purple-400/20 to-indigo-400/20 animate-pulse"></div>
+                        <div className="relative z-10 flex items-center">
+                            {isLoading ? (
+                                <><Loader2 className="w-6 h-6 animate-spin mr-3" />🧠 AI Hunting...</>
+                            ) : (
+                                <><Search className="w-6 h-6 mr-3" />🚀 Hunt Similar Dishes</>
+                            )}
+                        </div>
                     </button>
                 </form>
             </div>
             {(restaurants.length > 0 || isLoading) && (
             <div className="space-y-8">
               {restaurants.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 hover:bg-white/15 transition-all duration-300">
+                  <h2 className="text-3xl font-black text-transparent bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text mb-6">
                     {selectedPlace && selectedPlace.name !== 'Address not specified' 
-                      ? `Restaurants serving ${dish} like ${selectedPlace.name}`
-                      : `Restaurants serving ${dish}`}
+                      ? `🎯 ${dish} hunters like ${selectedPlace.name}`
+                      : `🍽️ ${dish} spots found`}
                   </h2>
-                  <p className="text-gray-600 mb-4 -mt-4">
+                  <p className="text-gray-300 mb-6 text-lg leading-relaxed">
                     {selectedPlace && selectedPlace.name !== 'Address not specified'
-                      ? `Found restaurants that might serve ${dish} similar to how ${selectedPlace.name} prepares it. Click on a restaurant to analyze a specific dish from their menu.`
-                      : 'Click on a restaurant to analyze a specific dish from their menu.'}
+                      ? `🔥 Found restaurants that might serve ${dish} similar to how ${selectedPlace.name} prepares it. Click any spot to dive deeper!`
+                      : '✨ Click on any restaurant to analyze their specific dishes!'}
                   </p>
                   <div className="space-y-4">
                     {restaurants.map((restaurant, index) => (
                       <div 
                         key={index} 
-                        className={`border rounded-lg p-6 transition-all duration-300 cursor-pointer ${
+                        className={`bg-white/5 backdrop-blur-sm border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:scale-105 ${
                           selectedRestaurant?.placeId === restaurant.placeId 
-                            ? 'bg-orange-50 border-orange-400 shadow-lg scale-105' 
-                            : 'border-gray-200 hover:shadow-md hover:border-orange-300'
+                            ? 'bg-gradient-to-r from-cyan-500/20 to-pink-500/20 border-cyan-400 shadow-2xl scale-105' 
+                            : 'border-white/20 hover:bg-white/10 hover:border-purple-400/50 hover:shadow-xl'
                         }`}
                         onClick={() => handleSelectRestaurant(restaurant)}
                       >
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="font-semibold text-lg text-gray-900">{restaurant.name}</h3>
-                            <p className="text-gray-600 text-sm">{restaurant.address}</p>
+                            <h3 className="font-black text-xl text-white mb-1">{restaurant.name}</h3>
+                            <p className="text-gray-400 text-sm">{restaurant.address}</p>
                           </div>
-                          <div className="flex items-center space-x-2 text-sm">
+                          <div className="flex items-center space-x-3 text-sm">
                             {restaurant.rating && (
-                              <div className="flex items-center">
+                              <div className="flex items-center bg-yellow-500/20 px-3 py-1 rounded-full border border-yellow-500/30">
                                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                <span className="ml-1 text-gray-700">{restaurant.rating}</span>
+                                <span className="ml-1 text-yellow-300 font-bold">{restaurant.rating}</span>
                               </div>
                             )}
                             {restaurant.priceLevel && (
-                              <div className="flex items-center text-green-600">
-                                <DollarSign className="w-4 h-4" />
-                                <span>{getPriceLevel(restaurant.priceLevel)}</span>
+                              <div className="flex items-center bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
+                                <DollarSign className="w-4 h-4 text-green-400" />
+                                <span className="text-green-300 font-bold">{getPriceLevel(restaurant.priceLevel)}</span>
                               </div>
                             )}
                           </div>
