@@ -46,12 +46,24 @@ export async function POST(request: NextRequest) {
     }
 
     const originalDish = dish;
-    const userLocation = restaurant || `${latitude}, ${longitude}`;
+    const sourceRestaurant = restaurant || null;
+    const userLocation = `${latitude}, ${longitude}`;
 
-    // Search directly for the dish with broader categories to get variety
+    // If we have a source restaurant, first analyze that dish at that restaurant
+    let dishProfile = null;
+    if (sourceRestaurant && sourceRestaurant.name !== 'Address not specified') {
+      try {
+        dishProfile = await analyzeDishAtRestaurant(originalDish, sourceRestaurant.name);
+      } catch (error) {
+        console.warn('Could not analyze source dish, proceeding with general search:', error);
+      }
+    }
+
+    // Search for restaurants that serve this type of dish (excluding the source restaurant)
     const searchQueries = [
       `"${originalDish}" restaurant`,
       `${originalDish} food`,
+      ...(dishProfile?.cuisineType ? [`${dishProfile.cuisineType} restaurant`] : []),
       'restaurant'  // General search to ensure variety
     ];
 
@@ -104,14 +116,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Filter out the source restaurant from results if provided
+    const filteredRestaurants = validRestaurants.filter(r => 
+      !sourceRestaurant || 
+      !r.name.toLowerCase().includes(sourceRestaurant.name.toLowerCase())
+    );
+
     // Analyze dish availability using detailed restaurant data
     const dishAvailabilityResults = await intelligentDishAnalysis(
-      validRestaurants,
-      originalDish
+      filteredRestaurants,
+      originalDish,
+      dishProfile
     );
 
     // Build final results with enhanced data
-    const restaurantResults = validRestaurants.map((restaurant, index) => {
+    const restaurantResults = filteredRestaurants.map((restaurant, index) => {
       const dishAvailability = dishAvailabilityResults[index];
 
       return {
@@ -144,6 +163,12 @@ export async function POST(request: NextRequest) {
       searchLocation: userLocation,
       searchRadius: radius,
       originalDish,
+      sourceRestaurant: sourceRestaurant?.name || null,
+      dishProfile: dishProfile ? {
+        cuisineType: dishProfile.cuisineType,
+        flavorProfile: dishProfile.flavorProfile,
+        cookingStyle: dishProfile.cookingStyle
+      } : null,
     });
 
   } catch (error) {
@@ -176,6 +201,75 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+async function analyzeDishAtRestaurant(dishName: string, restaurantName: string) {
+  const cohere = new CohereClient({
+    token: process.env.COHERE_API_KEY,
+  });
+
+  const prompt = `Analyze this specific dish at this restaurant:
+
+Dish: ${dishName}
+Restaurant: ${restaurantName}
+
+Provide a detailed profile of this dish including:
+- Flavor profile (spicy, sweet, savory, etc.)
+- Cooking style and preparation method
+- Key ingredients and seasonings
+- Texture and presentation
+- What makes this version unique
+- Cuisine type
+
+Format as a structured analysis.`;
+
+  try {
+    const response = await cohere.generate({
+      model: 'command-r-plus',
+      prompt,
+      maxTokens: 300,
+      temperature: 0.3,
+    });
+
+    const analysis = response.generations[0]?.text?.trim();
+    
+    // Extract key information for comparison
+    return {
+      analysis,
+      cuisineType: extractCuisineType(analysis),
+      flavorProfile: extractFlavorProfile(analysis),
+      cookingStyle: extractCookingStyle(analysis)
+    };
+  } catch (error) {
+    console.error('Error analyzing source dish:', error);
+    throw error;
+  }
+}
+
+function extractCuisineType(analysis: string): string {
+  // Simple extraction - look for cuisine keywords
+  const cuisines = ['American', 'Chinese', 'Italian', 'Mexican', 'Thai', 'Indian', 'Japanese', 'Korean', 'Mediterranean', 'French'];
+  for (const cuisine of cuisines) {
+    if (analysis.toLowerCase().includes(cuisine.toLowerCase())) {
+      return cuisine;
+    }
+  }
+  return 'American'; // default
+}
+
+function extractFlavorProfile(analysis: string): string[] {
+  const flavors = ['spicy', 'sweet', 'savory', 'tangy', 'sour', 'bitter', 'umami', 'smoky', 'crispy', 'tender'];
+  return flavors.filter(flavor => analysis.toLowerCase().includes(flavor));
+}
+
+function extractCookingStyle(analysis: string): string {
+  const styles = ['fried', 'grilled', 'baked', 'roasted', 'steamed', 'sautéed', 'braised'];
+  for (const style of styles) {
+    if (analysis.toLowerCase().includes(style)) {
+      return style;
+    }
+  }
+  return 'prepared'; // default
 }
 
 async function getRestaurantDetails(place: GooglePlace, apiKey: string) {
@@ -326,7 +420,8 @@ async function intelligentDishAnalysis(
     tasteProfile: { flavors?: string[]; style?: string };
     types: string[];
   }>,
-  originalDish: string
+  originalDish: string,
+  dishProfile?: { analysis: string; cuisineType: string; flavorProfile: string[]; cookingStyle: string } | null
 ): Promise<Array<{ hasExactDish: boolean; hasSimilarDish: boolean; confidence: number; reasoning: string }>> {
   if (!process.env.COHERE_API_KEY) {
     throw new Error('Cohere API key not configured');
@@ -344,7 +439,19 @@ async function intelligentDishAnalysis(
    - Restaurant type: ${restaurant.types.join(', ')}`;
   }).join('\n\n');
 
-  const prompt = `You are analyzing restaurants to find where someone could get "${originalDish}" or very similar dishes.
+  const dishContext = dishProfile ? `
+
+SOURCE DISH ANALYSIS:
+The user had "${originalDish}" at a restaurant and wants to find similar versions elsewhere.
+${dishProfile.analysis}
+
+Key characteristics to match:
+- Cuisine: ${dishProfile.cuisineType}
+- Flavors: ${dishProfile.flavorProfile.join(', ')}
+- Cooking style: ${dishProfile.cookingStyle}
+` : '';
+
+  const prompt = `You are analyzing restaurants to find where someone could get "${originalDish}" or very similar dishes.${dishContext}
 
 RESTAURANT PROFILES:
 ${restaurantProfiles}
@@ -356,7 +463,7 @@ Consider:
 - Flavor profiles (spicy, savory, sweet, etc.)
 - Cooking styles and cuisine types
 - Texture and preparation methods
-- Cultural/regional cuisine matches
+- Cultural/regional cuisine matches${dishProfile ? '\n- How well they match the reference dish characteristics' : ''}
 
 For each restaurant (1-${restaurants.length}), respond in this EXACT format:
 Restaurant 1: hasExact=false, hasSimilar=true, confidence=75, reason=Serves spicy Asian dishes with similar flavor profile

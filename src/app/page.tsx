@@ -249,8 +249,8 @@ export default function Home() {
                 <h1 className="text-4xl font-bold text-gray-900">Dish Discovery</h1>
             </div>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Find similar flavors near you! Tell us about a dish you loved, and we&apos;ll help you discover 
-                similar tastes in your area using AI-powered flavor analysis.
+                Find similar dishes at other restaurants! Tell us about a dish you loved at a specific restaurant, 
+                and we&apos;ll help you discover similar versions near you using AI-powered flavor analysis.
             </p>
         </div>
 
@@ -307,7 +307,7 @@ export default function Home() {
                                     console.log('🍽️ Dish input change:', e.target.value);
                                     setDish(e.target.value);
                                 }}
-                                placeholder="e.g., Spicy Boys Chicken"
+                                placeholder="e.g., Fried Chicken, Big Mac, Carne Asada Tacos"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 disabled={isLoading}
                             />
@@ -325,7 +325,7 @@ export default function Home() {
                                         type="text"
                                         value={fallbackInput}
                                         onChange={handleFallbackInputChange}
-                                        placeholder="Type restaurant name (or: Restaurant Name, Address)"
+                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner Name, etc.)"
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         disabled={isLoading}
                                     />
@@ -350,7 +350,7 @@ export default function Home() {
                                         ref={inputRef}
                                         type="text"
                                         id="location"
-                                        placeholder="Type a restaurant name..."
+                                        placeholder="Where did you have this dish? (e.g., KFC, Local Diner, etc.)"
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         disabled={isLoading}
                                         onChange={(e) => {
@@ -426,8 +426,16 @@ export default function Home() {
             <div className="space-y-8">
               {restaurants.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-xl p-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Nearby Restaurants</h2>
-                  <p className="text-gray-600 mb-4 -mt-4">Click on a restaurant to analyze a specific dish from their menu.</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    {selectedPlace && selectedPlace.name !== 'Address not specified' 
+                      ? `Restaurants serving ${dish} like ${selectedPlace.name}`
+                      : `Restaurants serving ${dish}`}
+                  </h2>
+                  <p className="text-gray-600 mb-4 -mt-4">
+                    {selectedPlace && selectedPlace.name !== 'Address not specified'
+                      ? `Found restaurants that might serve ${dish} similar to how ${selectedPlace.name} prepares it. Click on a restaurant to analyze a specific dish from their menu.`
+                      : 'Click on a restaurant to analyze a specific dish from their menu.'}
+                  </p>
                   <div className="space-y-4">
                     {restaurants.map((restaurant, index) => (
                       <div 
